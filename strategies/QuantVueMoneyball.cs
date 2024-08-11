@@ -25,23 +25,23 @@ using NinjaTrader.NinjaScript.DrawingTools;
 //This namespace holds Strategies in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.Strategies
 {
-	public class QuantVueQmomentum : Strategy
+	public class QuantVueMoneyball : Strategy
 	{
-		private QMomentum QMomentum1;
+		private Moneyball Moneyball1;
 
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
 			{
 				Description									= @"Enter the description for your new custom Strategy here.";
-				Name										= "QuantVueQmomentum";
+				Name										= "QuantVueMoneyball";
 				Calculate									= Calculate.OnBarClose;
 				EntriesPerDirection							= 1;
 				EntryHandling								= EntryHandling.AllEntries;
 				IsExitOnSessionCloseStrategy				= true;
 				ExitOnSessionCloseSeconds					= 30;
 				IsFillLimitOnTouch							= false;
-				MaximumBarsLookBack							= MaximumBarsLookBack.Infinite;
+				MaximumBarsLookBack							= MaximumBarsLookBack.TwoHundredFiftySix;
 				OrderFillResolution							= OrderFillResolution.Standard;
 				Slippage									= 0;
 				StartBehavior								= StartBehavior.WaitUntilFlat;
@@ -50,14 +50,13 @@ namespace NinjaTrader.NinjaScript.Strategies
 				RealtimeErrorHandling						= RealtimeErrorHandling.StopCancelClose;
 				StopTargetHandling							= StopTargetHandling.PerEntryExecution;
 				BarsRequiredToTrade							= 20;
-				RealtimeErrorHandling						= RealtimeErrorHandling.IgnoreAllErrors;
 				// Disable this property for performance gains in Strategy Analyzer optimizations
 				// See the Help Guide for additional information
 				IsInstantiatedOnEachOptimizationIteration	= true;
 				
-				TP = 80;
-				SL = 50;
-				DQ = 2;
+				TP = 30;
+				SL = 20;
+				DQ = 1;
 			}
 			else if (State == State.Configure)
 			{
@@ -65,20 +64,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			else if (State == State.DataLoaded)
 			{				
-				QMomentum1 = QMomentum(Close, 20, QMomentumMAType.EMA, true, true, true, true, false, Brushes.Teal, Brushes.Red, Brushes.Red, Brushes.RoyalBlue, Brushes.Green, Brushes.LimeGreen, Brushes.Yellow, Brushes.Red);
+				Moneyball1 = Moneyball(Close, Brushes.RoyalBlue, Brushes.Blue, 15, 10, true, 0.35, -0.35, 0.1, MoneyballMode.M);
 				SetProfitTarget(CalculationMode.Currency, TP);
 				SetStopLoss(CalculationMode.Currency, SL);
 			}
-		}
-		
-		protected override void OnOrderUpdate(Order order, double limitPrice, double stopPrice, int quantity, int filled, double averageFillPrice,
-                                    OrderState orderState, DateTime time, ErrorCode error, string nativeError)
-		{
-		  if (error != ErrorCode.NoError) 
-		  {
-			ExitLong();
-			ExitShort();
-		  }
 		}
 
 		protected override void OnBarUpdate()
@@ -86,22 +75,22 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (BarsInProgress != 0) 
 				return;
 
-			if (CurrentBars[0] < 1)
+			if (CurrentBars[0] < 5)
 				return;
 
 			 // Set 1
-			if  (CrossAbove(QMomentum1.Signal, QMomentum1.Main, 1))
+			if (CrossAbove(Moneyball1.VBar, 0, 2))
 			{
-				EnterLong(Convert.ToInt32(DefaultQuantity), "");
+				EnterLong(DefaultQuantity);
 			}
 			
-			 // Set 2
-			if (CrossBelow(QMomentum1.Signal, QMomentum1.Main, 1))
+			if (CrossBelow(Moneyball1.VBar, 0, 2))
 			{
-				EnterShort(Convert.ToInt32(DefaultQuantity), "");
+				EnterShort(DefaultQuantity);
 			}
 			
 		}
+		
 		
 		#region Properties
 		[NinjaScriptProperty]

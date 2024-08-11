@@ -50,6 +50,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				RealtimeErrorHandling						= RealtimeErrorHandling.StopCancelClose;
 				StopTargetHandling							= StopTargetHandling.PerEntryExecution;
 				BarsRequiredToTrade							= 20;
+				RealtimeErrorHandling						= RealtimeErrorHandling.IgnoreAllErrors;
 				// Disable this property for performance gains in Strategy Analyzer optimizations
 				// See the Help Guide for additional information
 				IsInstantiatedOnEachOptimizationIteration	= true;
@@ -67,6 +68,16 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Qcloud1 = Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99);
 			}
 		}
+		
+		protected override void OnOrderUpdate(Order order, double limitPrice, double stopPrice, int quantity, int filled, double averageFillPrice,
+                                    OrderState orderState, DateTime time, ErrorCode error, string nativeError)
+		{
+		  if (error != ErrorCode.NoError) 
+		  {
+			ExitLong();
+			ExitShort();
+		  }
+		}
 
 		protected override void OnBarUpdate()
 		{
@@ -77,7 +88,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				return;
 
 			 // Set 1
-			if (CrossAbove(Qcloud1.V1, Qcloud1.V4, 1) || CrossAbove(Qcloud1.V1, Qcloud1.V5, 1) || CrossAbove(Qcloud1.V1, Qcloud1.V6, 1))
+			if (CrossAbove(Qcloud1.V1, Qcloud1.V6, 1))
 			{
 				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
 				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
@@ -85,7 +96,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			
 			 // Set 2
-			if (CrossBelow(Qcloud1.V1, Qcloud1.V4, 1) || CrossBelow(Qcloud1.V1, Qcloud1.V5, 1) || CrossBelow(Qcloud1.V1, Qcloud1.V6, 1))
+			if (CrossBelow(Qcloud1.V1, Qcloud1.V6, 1))
 			{
 				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
 				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
@@ -115,6 +126,3 @@ namespace NinjaTrader.NinjaScript.Strategies
 		#endregion
 	}
 }
-
-
-
