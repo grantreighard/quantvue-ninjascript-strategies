@@ -50,7 +50,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 				RealtimeErrorHandling						= RealtimeErrorHandling.StopCancelClose;
 				StopTargetHandling							= StopTargetHandling.PerEntryExecution;
 				BarsRequiredToTrade							= 20;
-				RealtimeErrorHandling						= RealtimeErrorHandling.IgnoreAllErrors;
 				// Disable this property for performance gains in Strategy Analyzer optimizations
 				// See the Help Guide for additional information
 				IsInstantiatedOnEachOptimizationIteration	= true;
@@ -68,62 +67,29 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Qdirector1				= Qdirector(Close, 5, PRICE_DIRECTOR_SOURCE.Median, 0.7, 3.2, 5);
 			}
 		}
-		
-		protected override void OnOrderUpdate(Order order, double limitPrice, double stopPrice, int quantity, int filled, double averageFillPrice,
-                                    OrderState orderState, DateTime time, ErrorCode error, string nativeError)
-		{
-		  if (error != ErrorCode.NoError) 
-		  {
-			ExitLong();
-			ExitShort();
-		  }
-		}
-		
-		protected void CloseErrorWindows()
-		{
-		    if (!Dispatcher.CheckAccess())
-		    {
-		        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-		        {
-		            foreach (Window window in Application.Current.Windows)
-		            {
-		                if (window.Title == "Error")
-		                {
-		                    window.Close();
-		                }
-		            }
-		        }));
-		    }
-		}
-		
 
 		protected override void OnBarUpdate()
 		{
-			CloseErrorWindows();
-			
 			if (BarsInProgress != 0) 
 				return;
 
 			if (CurrentBars[0] < 1)
 				return;
 
-			bool market_open = (ToTime(Time[0]) >= 100000 && ToTime(Time[0]) <= 130000);
 			 // Set 1
-			if (market_open) {	
-				if (CrossAbove(Qdirector1.ZAMA1, Qdirector1.ZAMA2, 1))
-				{
-					EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
-					SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
-					SetProfitTarget("GoLong", CalculationMode.Currency, TP);
-				}
-				
-				 // Set 2
-				if (CrossBelow(Qdirector1.ZAMA1, Qdirector1.ZAMA2, 1))
-				{
-					EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
-					SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
-					SetProfitTarget("GoShort", CalculationMode.Currency, TP);
-				}
+			if (CrossAbove(Qdirector1.ZAMA1, Qdirector1.ZAMA2, 1))
+			{
+				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
+				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
+				SetProfitTarget("GoLong", CalculationMode.Currency, TP);
+			}
+			
+			 // Set 2
+			if (CrossBelow(Qdirector1.ZAMA1, Qdirector1.ZAMA2, 1))
+			{
+				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
+				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
+				SetProfitTarget("GoShort", CalculationMode.Currency, TP);
 			}
 			
 		}
@@ -1070,3 +1036,5 @@ namespace NinjaTrader.NinjaScript.Strategies
 </ScriptProperties>
 @*/
 #endregion
+
+
