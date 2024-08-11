@@ -44,7 +44,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				MaximumBarsLookBack							= MaximumBarsLookBack.TwoHundredFiftySix;
 				OrderFillResolution							= OrderFillResolution.Standard;
 				Slippage									= 0;
-				StartBehavior								= StartBehavior.WaitUntilFlat;
+				StartBehavior								= StartBehavior.ImmediatelySubmitSynchronizeAccount;
 				TimeInForce									= TimeInForce.Gtc;
 				TraceOrders									= false;
 				RealtimeErrorHandling						= RealtimeErrorHandling.StopCancelClose;
@@ -79,12 +79,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 				return;
 
 			 // Set 1
-			if (CrossAbove(Moneyball1.VBar, 0, 2))
+			if (CrossAbove(Moneyball1.VBar, 0.35, 1))
 			{
 				EnterLong(DefaultQuantity);
 			}
 			
-			if (CrossBelow(Moneyball1.VBar, 0, 2))
+			if (CrossBelow(Moneyball1.VBar, -0.35, 1))
 			{
 				EnterShort(DefaultQuantity);
 			}

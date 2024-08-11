@@ -44,7 +44,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				MaximumBarsLookBack							= MaximumBarsLookBack.TwoHundredFiftySix;
 				OrderFillResolution							= OrderFillResolution.Standard;
 				Slippage									= 0;
-				StartBehavior								= StartBehavior.WaitUntilFlat;
+				StartBehavior								= StartBehavior.ImmediatelySubmitSynchronizeAccount;
 				TimeInForce									= TimeInForce.Gtc;
 				TraceOrders									= false;
 				RealtimeErrorHandling						= RealtimeErrorHandling.IgnoreAllErrors;
