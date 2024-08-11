@@ -62,6 +62,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				SL = 20;
 				DQ = 1;
 				SMAPeriod = 21;
+				BreakevenProfit = 0;
 			}
 			else if (State == State.Configure)
 			{
@@ -96,6 +97,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			{
 				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
 				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
+				isBreakevenSet = false;
 			}
 			
 			 // Set 2
@@ -103,6 +105,17 @@ namespace NinjaTrader.NinjaScript.Strategies
 			{
 				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
 				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
+				isBreakevenSet = false;
+			}
+			
+			if (BreakevenProfit > 0)
+			{
+				if (Position.MarketPosition != MarketPosition.Flat && (Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0]) >= BreakevenProfit) && !isBreakevenSet)
+				{
+					SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice + (BreakevenProfit / 2), true);
+					SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice + (BreakevenProfit / 2), true);
+					isBreakevenSet = true;
+				}
 			}
 		}
 
@@ -129,6 +142,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Range(1, int.MaxValue)]
 		[Display(Name="SMA Period", Order=4, GroupName="Parameters")]
 		public int SMAPeriod
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="Breakeven Profit", Order=4, GroupName="Parameters")]
+		public int BreakevenProfit
 		{ get; set; }
 		#endregion
 
