@@ -28,6 +28,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 	public class QuantVueQcloud : Strategy
 	{
 		private Qcloud Qcloud1;
+		private	CustomEnumNamespace.TimeMode		TimeModeSelect		= CustomEnumNamespace.TimeMode.Restricted;
+		private DateTime 							startTime 			= DateTime.Parse("11:00:00", System.Globalization.CultureInfo.InvariantCulture);
+		private DateTime		 					endTime 			= DateTime.Parse("13:00:00", System.Globalization.CultureInfo.InvariantCulture);
 
 		protected override void OnStateChange()
 		{
@@ -66,6 +69,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			else if (State == State.DataLoaded)
 			{				
 				Qcloud1 = Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99);
+				AddChartIndicator(Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99));
 			}
 		}
 		
@@ -86,23 +90,52 @@ namespace NinjaTrader.NinjaScript.Strategies
 
 			if (CurrentBars[0] < 1)
 				return;
-
-			 // Set 1
-			if (CrossAbove(Qcloud1.V1, Qcloud1.V6, 1))
+			
+			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespace.TimeMode.Unrestricted)
 			{
-				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
-				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
-				SetProfitTarget("GoLong", CalculationMode.Currency, TP);
+				// Set 1
+				if (CrossAbove(Qcloud1.V1, Qcloud1.V6, 1))
+				{
+					EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
+					SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
+					SetProfitTarget("GoLong", CalculationMode.Currency, TP);
+				}
+			
+			 	// Set 2
+				if (CrossBelow(Qcloud1.V1, Qcloud1.V6, 1))
+				{
+					EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
+					SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
+					SetProfitTarget("GoShort", CalculationMode.Currency, TP);
+				}
 			}
 			
-			 // Set 2
-			if (CrossBelow(Qcloud1.V1, Qcloud1.V6, 1))
-			{
-				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
-				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
-				SetProfitTarget("GoShort", CalculationMode.Currency, TP);
-			}
-			
+		}
+		
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "Trading Hour Restriction", GroupName = "Time Parameters", Order = 0)]
+		public CustomEnumNamespace.TimeMode TIMEMODESelect
+		{
+			get { return TimeModeSelect; }
+			set { TimeModeSelect = value; }
+		}
+				
+		[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+        	[NinjaScriptProperty]
+        	[Display(Name = "Opening Range-Start", GroupName = "Time Parameters", Order = 1)]
+        	public DateTime StartTime 
+		{
+			get { return startTime; }
+			set { startTime = value; }
+		}
+		
+		[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+       		[NinjaScriptProperty]
+       		[Display(Name = "Opening Range-End", GroupName = "Time Parameters", Order = 2)]
+        	public DateTime EndTime
+		{
+			get { return endTime; }
+			set { endTime = value; }
 		}
 		
 		#region Properties
