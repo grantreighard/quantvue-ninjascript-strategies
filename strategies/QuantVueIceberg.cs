@@ -91,6 +91,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			{
 				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
 				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
+				SetProfitTarget("GoLong", CalculationMode.Currency, TP);
 				isBreakevenSet = false;
 			}
 			
@@ -98,6 +99,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			{
 				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
 				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
+				SetProfitTarget("GoShort", CalculationMode.Currency, TP);
 				isBreakevenSet = false;
 			}
 			
