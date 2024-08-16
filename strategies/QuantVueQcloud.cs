@@ -28,9 +28,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 	public class QuantVueQcloud : Strategy
 	{
 		private Qcloud Qcloud1;
-		private	CustomEnumNamespace.TimeMode		TimeModeSelect		= CustomEnumNamespace.TimeMode.Restricted;
-		private DateTime 							startTime 			= DateTime.Parse("11:00:00", System.Globalization.CultureInfo.InvariantCulture);
-		private DateTime		 					endTime 			= DateTime.Parse("13:00:00", System.Globalization.CultureInfo.InvariantCulture);
+		private	CustomEnumNamespaceCloud.TimeMode		TimeModeSelect		= CustomEnumNamespaceCloud.TimeMode.Restricted;
+		private DateTime 					startTime 		= DateTime.Parse("11:00:00", System.Globalization.CultureInfo.InvariantCulture);
+		private DateTime		 			endTime 		= DateTime.Parse("13:00:00", System.Globalization.CultureInfo.InvariantCulture);
 
 		protected override void OnStateChange()
 		{
@@ -91,7 +91,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (CurrentBars[0] < 1)
 				return;
 			
-			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespace.TimeMode.Unrestricted)
+			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceCloud.TimeMode.Unrestricted)
 			{
 				// Set 1
 				if (CrossAbove(Qcloud1.V1, Qcloud1.V6, 1))
@@ -112,9 +112,30 @@ namespace NinjaTrader.NinjaScript.Strategies
 			
 		}
 		
+
+		
+		#region Properties
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="TP", Order=1, GroupName="Parameters")]
+		public int TP
+		{ get; set; }
+
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="SL", Order=2, GroupName="Parameters")]
+		public int SL
+		{ get; set; }
+
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="DQ", Order=3, GroupName="Parameters")]
+		public int DQ
+		{ get; set; }
+		
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Trading Hour Restriction", GroupName = "Time Parameters", Order = 0)]
-		public CustomEnumNamespace.TimeMode TIMEMODESelect
+		public CustomEnumNamespaceCloud.TimeMode TIMEMODESelect
 		{
 			get { return TimeModeSelect; }
 			set { TimeModeSelect = value; }
@@ -137,25 +158,15 @@ namespace NinjaTrader.NinjaScript.Strategies
 			get { return endTime; }
 			set { endTime = value; }
 		}
-		
-		#region Properties
-		[NinjaScriptProperty]
-		[Range(1, int.MaxValue)]
-		[Display(Name="TP", Order=1, GroupName="Parameters")]
-		public int TP
-		{ get; set; }
-
-		[NinjaScriptProperty]
-		[Range(1, int.MaxValue)]
-		[Display(Name="SL", Order=2, GroupName="Parameters")]
-		public int SL
-		{ get; set; }
-
-		[NinjaScriptProperty]
-		[Range(1, int.MaxValue)]
-		[Display(Name="DQ", Order=3, GroupName="Parameters")]
-		public int DQ
-		{ get; set; }
 		#endregion
+	}
+}
+
+namespace CustomEnumNamespaceCloud
+{
+	public enum TimeMode
+	{
+		Restricted,
+		Unrestricted
 	}
 }
