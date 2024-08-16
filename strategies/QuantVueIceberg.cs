@@ -87,14 +87,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 				return;
 			
 
-			if (CrossAbove(Moneyball1.VBar, 0.35, 5) && CrossAbove(Qcloud1.V1, Qcloud1.V6,51) && CrossAbove(Qwave1.K1, Qwave1.VHigh, 5) && CrossAbove(MACD1.Avg, MACD1.Default, 5)  && Close[0] > SMA(Close, 21)[0])
+			if (CrossAbove(Moneyball1.VBar, 0.35, 5) && CrossAbove(Qcloud1.V1, Qcloud1.V6,51) && CrossAbove(Qwave1.K1, Qwave1.VHigh, 5) && CrossAbove(MACD1.Default, MACD1.Avg, 5)  && Close[0] > SMA(Close, 21)[0])
 			{
 				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
 				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
 				isBreakevenSet = false;
 			}
 			
-			if (CrossBelow(Moneyball1.VBar, -0.35, 5) && CrossBelow(Qcloud1.V1, Qcloud1.V6, 5) && CrossBelow(Qwave1.VLow, Qwave1.K1, 5) && CrossBelow(MACD1.Avg, MACD1.Default, 5) && Close[0] < SMA(Close, 21)[0])
+			if (CrossBelow(Moneyball1.VBar, -0.35, 5) && CrossBelow(Qcloud1.V1, Qcloud1.V6, 5) && CrossBelow(Qwave1.VLow, Qwave1.K1, 5) && CrossBelow(MACD1.Default, MACD1.Avg, 5) && Close[0] < SMA(Close, 21)[0])
 			{
 				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
 				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
