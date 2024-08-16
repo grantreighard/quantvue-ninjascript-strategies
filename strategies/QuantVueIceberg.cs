@@ -33,6 +33,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private Qwave Qwave1;
 		private MACD MACD1;
 		private bool isBreakevenSet = false;
+		private	CustomEnumNamespaceIce.TimeMode			TimeModeSelect		= CustomEnumNamespaceIce.TimeMode.Restricted;
+		private DateTime 								startTime 			= DateTime.Parse("11:00:00", System.Globalization.CultureInfo.InvariantCulture);
+		private DateTime		 						endTime 			= DateTime.Parse("13:00:00", System.Globalization.CultureInfo.InvariantCulture);
 		
 		protected override void OnStateChange()
 		{
@@ -77,6 +80,11 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Qcloud1 = Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99);
 				Qwave1 = Qwave(Close, 55, 256, 1.5, 0.1, 9, false, false, Brushes.Transparent);
 				MACD1 = MACD(Close, FastPeriod, SlowPeriod, SignalPeriod);
+				AddChartIndicator(Moneyball(Close, Brushes.RoyalBlue, Brushes.Blue, 15, 10, true, 0.35, -0.35, 0.1, MoneyballMode.M));
+				AddChartIndicator(Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99));
+				AddChartIndicator(Qwave(Close, 55, 256, 1.5, 0.1, 9, false, false, Brushes.Transparent));
+				AddChartIndicator(MACD(Close, FastPeriod, SlowPeriod, SignalPeriod));
+				
 			}
 		}
 
@@ -86,23 +94,26 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (BarsInProgress != 0 || CurrentBar < BarsRequiredToTrade)
 				return;
 			
+			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceIce.TimeMode.Unrestricted)
+			{
 
-			if (CrossAbove(Moneyball1.VBar, 0.35, 5) && CrossAbove(Qcloud1.V1, Qcloud1.V6,51) && CrossAbove(Qwave1.K1, Qwave1.VHigh, 5) && CrossAbove(MACD1.Default, MACD1.Avg, 5)  && Close[0] > SMA(Close, 21)[0])
-			{
-				EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
-				SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
-				SetProfitTarget("GoLong", CalculationMode.Currency, TP);
-				isBreakevenSet = false;
-			}
+				if (CrossAbove(Moneyball1.VBar, 0.35, 5) && CrossAbove(Qcloud1.V1, Qcloud1.V6,51) && CrossAbove(Qwave1.K1, Qwave1.VHigh, 5) && CrossAbove(MACD1.Default, MACD1.Avg, 5)  && Close[0] > SMA(Close, 21)[0])
+				{
+					EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
+					SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
+					SetProfitTarget("GoLong", CalculationMode.Currency, TP);
+					isBreakevenSet = false;
+				}
 			
-			if (CrossBelow(Moneyball1.VBar, -0.35, 5) && CrossBelow(Qcloud1.V1, Qcloud1.V6, 5) && CrossBelow(Qwave1.VLow, Qwave1.K1, 5) && CrossBelow(MACD1.Default, MACD1.Avg, 5) && Close[0] < SMA(Close, 21)[0])
-			{
-				EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
-				SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
-				SetProfitTarget("GoShort", CalculationMode.Currency, TP);
-				isBreakevenSet = false;
+				if (CrossBelow(Moneyball1.VBar, -0.35, 5) && CrossBelow(Qcloud1.V1, Qcloud1.V6, 5) && CrossBelow(Qwave1.VLow, Qwave1.K1, 5) && CrossBelow(MACD1.Default, MACD1.Avg, 5) && Close[0] < SMA(Close, 21)[0])
+				{
+					EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
+					SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
+					SetProfitTarget("GoShort", CalculationMode.Currency, TP);
+					isBreakevenSet = false;
+				}
 			}
-			
+				
 			if (BreakevenProfit > 0)
 			{
 				if (Position.MarketPosition != MarketPosition.Flat && (Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0]) >= BreakevenProfit) && !isBreakevenSet)
@@ -116,6 +127,33 @@ namespace NinjaTrader.NinjaScript.Strategies
 		}
 		
 		#region Properties
+		
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "Trading Hour Restriction", GroupName = "Time Parameters", Order = 0)]
+		public CustomEnumNamespaceIce.TimeMode TIMEMODESelect
+		{
+			get { return TimeModeSelect; }
+			set { TimeModeSelect = value; }
+		}
+				
+		[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+        [NinjaScriptProperty]
+        [Display(Name = "Opening Range-Start", GroupName = "Time Parameters", Order = 1)]
+        public DateTime StartTime 
+		{
+			get { return startTime; }
+			set { startTime = value; }
+		}
+		
+		[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+       	[NinjaScriptProperty]
+       	[Display(Name = "Opening Range-End", GroupName = "Time Parameters", Order = 2)]
+        public DateTime EndTime
+		{
+			get { return endTime; }
+			set { endTime = value; }
+		}
+		
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
 		[Display(Name="TP", Order=1, GroupName="Parameters")]
@@ -158,5 +196,14 @@ namespace NinjaTrader.NinjaScript.Strategies
         public int SignalPeriod 
 		{ get; set; }
         #endregion
+	}
+}
+
+namespace CustomEnumNamespaceIce
+{
+	public enum TimeMode
+	{
+		Restricted,
+		Unrestricted
 	}
 }
