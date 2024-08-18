@@ -65,7 +65,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 				TP = 300;
 				SL = 100;
 				DQ = 10;
-				BreakevenProfit = 5;
+				LookbackPeriod = 5;
+				BreakevenProfit = 125;
 				FastPeriod = 12;  
                 SlowPeriod  = 26;  
                 SignalPeriod  = 9; 
@@ -97,7 +98,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceIce.TimeMode.Unrestricted)
 			{
 
-				if (CrossAbove(Moneyball1.VBar, 0.35, 5) && CrossAbove(Qcloud1.V1, Qcloud1.V6,51) && CrossAbove(Qwave1.K1, Qwave1.VHigh, 5) && CrossAbove(MACD1.Default, MACD1.Avg, 5)  && Close[0] > SMA(Close, 21)[0])
+				if (CrossAbove(Moneyball1.VBar, 0.35, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, LookbackPeriod)  && Close[0] > SMA(Close, 21)[0])
 				{
 					EnterLong(Convert.ToInt32(DefaultQuantity), "GoLong");
 					SetStopLoss("GoLong", CalculationMode.Currency, SL, false);
@@ -105,7 +106,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 					isBreakevenSet = false;
 				}
 			
-				if (CrossBelow(Moneyball1.VBar, -0.35, 5) && CrossBelow(Qcloud1.V1, Qcloud1.V6, 5) && CrossBelow(Qwave1.VLow, Qwave1.K1, 5) && CrossBelow(MACD1.Default, MACD1.Avg, 5) && Close[0] < SMA(Close, 21)[0])
+				if (CrossBelow(Moneyball1.VBar, -0.35, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.VLow, Qwave1.K1, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, LookbackPeriod) && Close[0] < SMA(Close, 21)[0])
 				{
 					EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
 					SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
@@ -180,19 +181,25 @@ namespace NinjaTrader.NinjaScript.Strategies
 		
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Fast Period", Order=5, GroupName="Parameters")]
+        [Display(Name="Lookback Period", Order=5, GroupName="Parameters")]
+        public int LookbackPeriod 
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name="Fast Period", Order=6, GroupName="Parameters")]
         public int FastPeriod 
 		{ get; set; }
 
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Slow Period", Order=6, GroupName="Parameters")]
+        [Display(Name="Slow Period", Order=7, GroupName="Parameters")]
         public int SlowPeriod 
 		{ get; set; }
 
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Signal Period", Order=7, GroupName="Parameters")]
+        [Display(Name="Signal Period", Order=8, GroupName="Parameters")]
         public int SignalPeriod 
 		{ get; set; }
         #endregion
