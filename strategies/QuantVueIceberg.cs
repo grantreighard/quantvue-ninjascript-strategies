@@ -77,13 +77,13 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			else if (State == State.DataLoaded)
 			{				
-				Moneyball1 = Moneyball(Close, Brushes.RoyalBlue, Brushes.Blue, 15, 10, true, 0.35, -0.35, 0.1, MoneyballMode.M);
-				Qcloud1 = Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99);
-				Qwave1 = Qwave(Close, 55, 256, 1.5, 0.1, 9, false, false, Brushes.Transparent);
+				Moneyball1 = Moneyball(Close, Brushes.RoyalBlue, Brushes.Blue, 15, 10, true, 0.35, -0.35, 0.1, MoneyballMode.M, false);
+				Qcloud1 = Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99, false);
+				Qwave1 = Qwave(Close, 55, 256, 1.5, 0.1, 9, false, false, Brushes.Transparent, false);
 				MACD1 = MACD(Close, FastPeriod, SlowPeriod, SignalPeriod);
-				AddChartIndicator(Moneyball(Close, Brushes.RoyalBlue, Brushes.Blue, 15, 10, true, 0.35, -0.35, 0.1, MoneyballMode.M));
-				AddChartIndicator(Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99));
-				AddChartIndicator(Qwave(Close, 55, 256, 1.5, 0.1, 9, false, false, Brushes.Transparent));
+				AddChartIndicator(Moneyball(Close, Brushes.RoyalBlue, Brushes.Blue, 15, 10, true, 0.35, -0.35, 0.1, MoneyballMode.M, false));
+				AddChartIndicator(Qcloud(Close, Brushes.Red, Brushes.Green, 19, 29, 49, 59, 69, 99, false));
+				AddChartIndicator(Qwave(Close, 55, 256, 1.5, 0.1, 9, false, false, Brushes.Transparent, false));
 				AddChartIndicator(MACD(Close, FastPeriod, SlowPeriod, SignalPeriod));
 				
 			}
@@ -106,7 +106,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 					isBreakevenSet = false;
 				}
 			
-				if (CrossBelow(Moneyball1.VBar, -0.35, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.VLow, Qwave1.K1, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, LookbackPeriod) && Close[0] < SMA(Close, 21)[0])
+				if (CrossBelow(Moneyball1.VBar, -0.35, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, LookbackPeriod) && Close[0] < SMA(Close, 21)[0])
 				{
 					EnterShort(Convert.ToInt32(DefaultQuantity), "GoShort");
 					SetStopLoss("GoShort", CalculationMode.Currency, SL, false);
@@ -119,8 +119,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 			{
 				if (Position.MarketPosition != MarketPosition.Flat && (Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0]) >= BreakevenProfit) && !isBreakevenSet)
 				{
-					SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice + (BreakevenProfit / 2), true);
-					SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice + (BreakevenProfit / 2), true);
+					SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice, true);
+					SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice, true);
 					isBreakevenSet = true;
 				}
 			}
