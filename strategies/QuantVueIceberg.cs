@@ -66,7 +66,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				SL = 100;
 				DQ = 10;
 				LookbackPeriod = 5;
-				BreakevenProfit = 125;
+				BreakevenProfit = 0;
 				FastPeriod = 12;  
                 SlowPeriod  = 26;  
                 SignalPeriod  = 9; 
