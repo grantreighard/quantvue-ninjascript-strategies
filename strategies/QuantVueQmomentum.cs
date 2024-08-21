@@ -65,7 +65,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			else if (State == State.DataLoaded)
 			{				
-				QMomentum1 = QMomentum(Close, 20, QMomentumMAType.EMA, true, true, true, true, false, Brushes.Teal, Brushes.Red, Brushes.Red, Brushes.RoyalBlue, Brushes.Green, Brushes.LimeGreen, Brushes.Yellow, Brushes.Red);
+				QMomentum1 = QMomentum(20, QMomentumMAType.EMA, true, false, true, true, true, false, Brushes.Teal, Brushes.Red, Brushes.Red, Brushes.RoyalBlue, Brushes.Green, Brushes.LimeGreen, Brushes.Yellow, Brushes.Red);
 				SetProfitTarget(CalculationMode.Currency, TP);
 				SetStopLoss(CalculationMode.Currency, SL);
 			}
