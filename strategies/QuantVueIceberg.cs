@@ -83,6 +83,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			else if (State == State.Configure)
 			{
 				DefaultQuantity = DQ;
+				AddDataSeries(Data.BarsPeriodType.Second, 1);
 			}
 			else if (State == State.DataLoaded)
 			{				
@@ -104,7 +105,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (BarsInProgress != 0 || CurrentBar < BarsRequiredToTrade)
 				return;
 			
-			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceIce.TimeMode.Unrestricted)
+			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceIce.TimeMode.Unrestricted && Position.MarketPosition == MarketPosition.Flat)
 			{
 
 				if (CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, LookbackPeriod)  && Close[0] > SMA(Close, 21)[0])
@@ -147,7 +148,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			
 			// Step Stop Loss Mode //
 			
-			if (StopModeSelect == CustomEnumNamespaceIce.StopMode.StepSL && isBreakevenSet == true)
+			if (Position.MarketPosition != MarketPosition.Flat && StopModeSelect == CustomEnumNamespaceIce.StopMode.StepSL && isBreakevenSet == true)
 			{
 				/*Commenting out for testing
 				if (Position.MarketPosition == MarketPosition.Long && Close[0] >= Position.AveragePrice + slStepSize * TickSize && isBreakevenSet == false)
@@ -160,7 +161,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				
 				if (Position.MarketPosition == MarketPosition.Long)
 				{
-					if (Close[0] > Position.AveragePrice + ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
+					if (Closes[1][0] > Position.AveragePrice + ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
 					{
 						SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice + (tickCount * TickSize), false);
 						tickCount ++; // increment to next tick
@@ -169,7 +170,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 
 				if (Position.MarketPosition == MarketPosition.Short)
 				{
-					if (Close[0] < Position.AveragePrice - (slStepSize + tickCount) * TickSize) // adjust higher each time by tickCount
+					if (Closes[1][0] < Position.AveragePrice - ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
 					{
 						SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice - (tickCount * TickSize), false);
 						tickCount ++; // increment to next tick
