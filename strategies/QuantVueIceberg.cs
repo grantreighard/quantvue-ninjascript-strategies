@@ -83,7 +83,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 			else if (State == State.Configure)
 			{
 				DefaultQuantity = DQ;
-				AddDataSeries(Data.BarsPeriodType.Second, 1);
 			}
 			else if (State == State.DataLoaded)
 			{				
@@ -161,7 +160,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				
 				if (Position.MarketPosition == MarketPosition.Long)
 				{
-					if (Closes[1][0] > Position.AveragePrice + ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
+					if (Close[0] > Position.AveragePrice + ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
 					{
 						SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice + (tickCount * TickSize), false);
 						tickCount ++; // increment to next tick
@@ -170,7 +169,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 
 				if (Position.MarketPosition == MarketPosition.Short)
 				{
-					if (Closes[1][0] < Position.AveragePrice - ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
+					if (Close[0] < Position.AveragePrice - ((slStepSize + tickCount) * TickSize)) // adjust higher each time by tickCount
 					{
 						SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice - (tickCount * TickSize), false);
 						tickCount ++; // increment to next tick
