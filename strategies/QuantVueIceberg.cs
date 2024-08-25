@@ -87,6 +87,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				maxDailyLoss = false;
 				maxDailyLossAmount = 500;
 				slFrequency = 1;
+    				slStepSize = 1;
 			}
 			else if (State == State.Configure)
 			{
