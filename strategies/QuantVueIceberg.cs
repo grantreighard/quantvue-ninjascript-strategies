@@ -309,7 +309,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		
 		[NinjaScriptProperty]
 		[Range(0, int.MaxValue)]
-		[Display(Name="Max Daily Profit (Currency)", Order=7, GroupName="Trade Parameters")]
+		[Display(Name="Max Daily Loss (Currency)", Order=7, GroupName="Trade Parameters")]
 		public int maxDailyLossAmount
 		{ get; set; }
 		
