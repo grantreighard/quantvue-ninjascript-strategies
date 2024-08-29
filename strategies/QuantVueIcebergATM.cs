@@ -89,6 +89,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				maxDailyLoss = false;
 				maxDailyLossAmount = 500;
 				userSMA = 21;
+				atmName = "IcebergATM";
 			}
 			else if (State == State.Configure)
 			{
@@ -178,7 +179,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 						{
 							longOrderId = GetAtmStrategyUniqueId();
 							longAtmId = GetAtmStrategyUniqueId();
-							AtmStrategyCreate(OrderAction.Buy, OrderType.Market, 0, 0, TimeInForce.Day, longOrderId, "IcebergATM", longAtmId, (atmCallbackErrorCode, atmCallBackId) => { 
+							AtmStrategyCreate(OrderAction.Buy, OrderType.Market, 0, 0, TimeInForce.Day, longOrderId, atmName, longAtmId, (atmCallbackErrorCode, atmCallBackId) => { 
 								//check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
 								if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == longAtmId) 
 									isLongAtmStrategyCreated = true;
@@ -201,7 +202,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 						{
 							shortOrderId = GetAtmStrategyUniqueId();
 							shortAtmId = GetAtmStrategyUniqueId();
-							AtmStrategyCreate(OrderAction.SellShort, OrderType.Market, 0, 0, TimeInForce.Day, shortOrderId, "IcebergATM", shortAtmId, (atmCallbackErrorCode, atmCallBackId) => { 
+							AtmStrategyCreate(OrderAction.SellShort, OrderType.Market, 0, 0, TimeInForce.Day, shortOrderId, atmName, shortAtmId, (atmCallbackErrorCode, atmCallBackId) => { 
 								//check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
 								if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == shortAtmId) 
 									isShortAtmStrategyCreated = true;
@@ -267,60 +268,65 @@ namespace NinjaTrader.NinjaScript.Strategies
 		}
 
 		[NinjaScriptProperty]
+		[Display(Name="ATM Name (No Spaces)", Order=0, GroupName="Trade Parameters")]
+		public string atmName
+		{ get; set; }
+		
+		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(Name="Default Quantity (Contracts)", Order=0, GroupName="Trade Parameters")]
+		[Display(Name="Default Quantity (Contracts)", Order=1, GroupName="Trade Parameters")]
 		public int DQ
 		{ get; set; }
 		
 		[NinjaScriptProperty]
-		[Display(Name="Max Daily Profit", Order=1, GroupName="Trade Parameters")]
+		[Display(Name="Max Daily Profit", Order=2, GroupName="Trade Parameters")]
 		public bool maxDailyProfit
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, int.MaxValue)]
-		[Display(Name="Max Daily Profit (Currency)", Order=2, GroupName="Trade Parameters")]
+		[Display(Name="Max Daily Profit (Currency)", Order=3, GroupName="Trade Parameters")]
 		public int maxDailyProfitAmount
 		{ get; set; }
 		
 		[NinjaScriptProperty]
-		[Display(Name="Max Daily Loss", Order=3, GroupName="Trade Parameters")]
+		[Display(Name="Max Daily Loss", Order=4, GroupName="Trade Parameters")]
 		public bool maxDailyLoss
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, int.MaxValue)]
-		[Display(Name="Max Daily Loss (Currency)", Order=4, GroupName="Trade Parameters")]
+		[Display(Name="Max Daily Loss (Currency)", Order=5, GroupName="Trade Parameters")]
 		public int maxDailyLossAmount
 		{ get; set; }
 		
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Lookback Period", Order=5, GroupName="Trade Parameters")]
+        [Display(Name="Lookback Period", Order=6, GroupName="Trade Parameters")]
         public int LookbackPeriod 
 		{ get; set; }
 				
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Fast Period", Order=6, GroupName="Trade Parameters")]
+        [Display(Name="Fast Period", Order=7, GroupName="Trade Parameters")]
         public int FastPeriod 
 		{ get; set; }
 
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Slow Period", Order=7, GroupName="Trade Parameters")]
+        [Display(Name="Slow Period", Order=8, GroupName="Trade Parameters")]
         public int SlowPeriod 
 		{ get; set; }
 
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Signal Period", Order=8, GroupName="Trade Parameters")]
+        [Display(Name="Signal Period", Order=9, GroupName="Trade Parameters")]
         public int SignalPeriod 
 		{ get; set; }
 		
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="SMA Period", Order=9, GroupName="Trade Parameters")]
+        [Display(Name="SMA Period", Order=10, GroupName="Trade Parameters")]
         public int userSMA 
 		{ get; set; }
 		
