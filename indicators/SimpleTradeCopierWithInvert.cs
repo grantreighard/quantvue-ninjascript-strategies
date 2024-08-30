@@ -358,7 +358,7 @@ namespace NinjaTrader.NinjaScript.Indicators.Prop_Trader_Tools
 			//Add your custom indicator logic here.
 			if (ShouldInvertTradesOnChop)
 			{
-				ShouldInvertTrades = ChoppinessIndex(14)[0] > 38.2;	
+				ShouldInvertTrades = ChoppinessIndex(14)[0] > 55;	
 			}
 			
 		}
