@@ -147,7 +147,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 								if (addEntryCount < maxEntries && iGRID_EVO1.AddSignal[0] == 1)
 								{
 									Print(string.Format("Add Signal"));
-									EnterLong(flipEntryQ, "GoLong");
+									EnterLong(addEntryQ, "GoLong");
 									addEntryCount ++;
 								}
 							}
@@ -160,7 +160,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 								}
 								if (addEntryCount < maxEntries && iGRID_EVO1.AddSignal[0] == -1)
 								{
-									EnterShort(flipEntryQ, "GoShort");
+									EnterShort(addEntryQ, "GoShort");
 									addEntryCount ++;
 								}
 							}
