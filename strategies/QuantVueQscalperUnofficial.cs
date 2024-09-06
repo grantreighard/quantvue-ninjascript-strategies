@@ -36,7 +36,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private CustomEnumNamespaceScalper.TimeMode TimeModeSelect = CustomEnumNamespaceScalper.TimeMode.Restricted;
 		private DateTime startTime = DateTime.Parse("09:35:00", System.Globalization.CultureInfo.InvariantCulture);
 		private DateTime endTime = DateTime.Parse("16:00:00", System.Globalization.CultureInfo.InvariantCulture);
-		private	CustomEnumNamespaceIce1.StopMode StopModeSelect = CustomEnumNamespaceIce1.StopMode.BEOnly;
+		private	CustomEnumNamespaceScalper.StopMode StopModeSelect = CustomEnumNamespaceScalper.StopMode.BEOnly;
 		
 		protected override void OnStateChange()
 		{
@@ -138,7 +138,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			
 			// BE Only Stop Loss Mode //
 			
-			if (BreakevenProfit > 0 && StopModeSelect == CustomEnumNamespaceIce1.StopMode.BEOnly || StopModeSelect == CustomEnumNamespaceIce1.StopMode.StepSL)
+			if (BreakevenProfit > 0 && StopModeSelect == CustomEnumNamespaceScalper.StopMode.BEOnly || StopModeSelect == CustomEnumNamespaceScalper.StopMode.StepSL)
 			{
 				if (Position.MarketPosition != MarketPosition.Flat && (Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0]) >= BreakevenProfit) && !isBreakevenSet)
 				{
@@ -159,7 +159,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			
 			// Step Stop Loss Mode //
 			
-			if (Position.MarketPosition != MarketPosition.Flat && StopModeSelect == CustomEnumNamespaceIce1.StopMode.StepSL && isBreakevenSet == true)
+			if (Position.MarketPosition != MarketPosition.Flat && StopModeSelect == CustomEnumNamespaceScalper.StopMode.StepSL && isBreakevenSet == true)
 			{
 								
 				if (Position.MarketPosition == MarketPosition.Long)
@@ -284,7 +284,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		
 		[NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Stoploss Mode Select", GroupName = "SL Parameters", Order = 0)]
-		public CustomEnumNamespaceIce1.StopMode STOPMODESelect
+		public CustomEnumNamespaceScalper.StopMode STOPMODESelect
 		{
 			get { return StopModeSelect; }
 			set { StopModeSelect = value; }
