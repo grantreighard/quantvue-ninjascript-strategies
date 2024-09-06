@@ -30,10 +30,13 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private Qwave Qwave1;
 		private Qcloud Qcloud1;
 		private double currentPnL;
+		private bool isBreakevenSet = false;
+		private int tickCount = 1;
 		
 		private CustomEnumNamespaceScalper.TimeMode TimeModeSelect = CustomEnumNamespaceScalper.TimeMode.Restricted;
 		private DateTime startTime = DateTime.Parse("09:35:00", System.Globalization.CultureInfo.InvariantCulture);
 		private DateTime endTime = DateTime.Parse("16:00:00", System.Globalization.CultureInfo.InvariantCulture);
+		private	CustomEnumNamespaceIce1.StopMode StopModeSelect = CustomEnumNamespaceIce1.StopMode.BEOnly;
 		
 		protected override void OnStateChange()
 		{
@@ -67,6 +70,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 				maxDailyProfitAmount = 500;
 				maxDailyLoss = true;
 				maxDailyLossAmount = 250;
+				BreakevenProfit = 0;
+				slFrequency = 1;
+				slStepSize = 1;
 			}
 			else if (State == State.Configure)
 			{
@@ -128,6 +134,52 @@ namespace NinjaTrader.NinjaScript.Strategies
 						}
 					}
 				}
+			}
+			
+			// BE Only Stop Loss Mode //
+			
+			if (BreakevenProfit > 0 && StopModeSelect == CustomEnumNamespaceIce1.StopMode.BEOnly || StopModeSelect == CustomEnumNamespaceIce1.StopMode.StepSL)
+			{
+				if (Position.MarketPosition != MarketPosition.Flat && (Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0]) >= BreakevenProfit) && !isBreakevenSet)
+				{
+					if (Position.MarketPosition == MarketPosition.Long)
+					{
+						SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice, false);
+						isBreakevenSet = true;
+						tickCount = 1;
+					}
+					else if (Position.MarketPosition == MarketPosition.Short)
+					{
+						SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice, false);
+						isBreakevenSet = true;
+						tickCount = 1;
+					}
+				}
+			}
+			
+			// Step Stop Loss Mode //
+			
+			if (Position.MarketPosition != MarketPosition.Flat && StopModeSelect == CustomEnumNamespaceIce1.StopMode.StepSL && isBreakevenSet == true)
+			{
+								
+				if (Position.MarketPosition == MarketPosition.Long)
+				{
+					if (Close[0] > Position.AveragePrice + ((slStepSize + (slFrequency * tickCount)) * TickSize)) // adjust higher each time by tickCount
+					{
+						SetStopLoss("GoLong", CalculationMode.Price, Position.AveragePrice + (((slFrequency * tickCount) - slStepSize) * TickSize), false);
+						tickCount ++; // increment to next tick
+					}
+				}
+
+				if (Position.MarketPosition == MarketPosition.Short)
+				{
+					if (Close[0] < Position.AveragePrice - ((slStepSize + (slFrequency * tickCount)) * TickSize)) // adjust higher each time by tickCount
+					{
+						SetStopLoss("GoShort", CalculationMode.Price, Position.AveragePrice - (((slFrequency * tickCount) - slStepSize) * TickSize), false);
+						tickCount ++; // increment to next tick
+					}
+				}
+				
 			}
 		}
 		
@@ -201,7 +253,13 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Display(Name = "Default Quantity (Contracts)", Order = 3, GroupName = "Trade Parameters")]
 		public int DQ
 		{ get; set; }
-
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="Breakeven Profit (Currency)", Order=4, GroupName="Trade Parameters")]
+		public int BreakevenProfit
+		{ get; set; }
+		
 		[NinjaScriptProperty]
 		[Display(Name = "Max Daily Profit", Order = 5, GroupName = "Trade Parameters")]
 		public bool maxDailyProfit
@@ -222,6 +280,26 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Range(0, int.MaxValue)]
 		[Display(Name = "Max Daily Loss (Currency)", Order = 7, GroupName = "Trade Parameters")]
 		public int maxDailyLossAmount
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "Stoploss Mode Select", GroupName = "SL Parameters", Order = 0)]
+		public CustomEnumNamespaceIce1.StopMode STOPMODESelect
+		{
+			get { return StopModeSelect; }
+			set { StopModeSelect = value; }
+		}
+		
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "Stoploss Step Distance (Ticks)", GroupName = "SL Parameters", Order = 1)]
+		public int slStepSize
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "Stoploss Step Frequency (Ticks)", GroupName = "SL Parameters", Order = 2)]
+		public int slFrequency
 		{ get; set; }
 		#endregion
 	}
