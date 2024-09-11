@@ -42,6 +42,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 			private double									longStepMA;
 			private double									shortStepMA;
 			private double 									currentPnL;
+			private bool									scaleSell			= false;
+			private int										contractCount		= 0;
 
 			
 
@@ -85,6 +87,20 @@ namespace NinjaTrader.NinjaScript.Strategies
 							maxDailyProfitAmount = 500;
 							maxDailyLoss = false;
 							maxDailyLossAmount = 500;
+							grid1Period1 = 55;
+							grid1omaL = 19;
+							grid1omaS = 2.9;
+							grid1omaA = true;
+							grid1Sensitivity = 2;
+							grid1StepSize = 50;
+							grid1Period2 = 8;
+							grid2Period1 = 200;
+							grid2omaL = 110;
+							grid2omaS = 5;
+							grid2omaA = true;
+							grid2Sensitivity = 10;
+							grid2StepSize = 500;
+							grid2Period2 = 20;
 							
                         }
                         else if (State == State.Configure)
@@ -94,11 +110,11 @@ namespace NinjaTrader.NinjaScript.Strategies
                         }
                         else if (State == State.DataLoaded)
                         {                                
-                            iGRID_EVO1 = iGRID_EVO(Close, 55, 19, 2.9, true, 2, 50, 8);
-							iGRID_EVO2 = iGRID_EVO(Close, 200, 110, 5, true, 10, 500, 20);
+                            iGRID_EVO1 = iGRID_EVO(Close, grid1Period1, grid1omaL, grid1omaS, grid1omaA, grid1Sensitivity, grid1StepSize, grid1Period2);
+							iGRID_EVO2 = iGRID_EVO(Close, grid2Period1, grid2omaL, grid2omaS, grid2omaA, grid2Sensitivity, grid2StepSize, grid2Period2);
                             
-                            AddChartIndicator(iGRID_EVO(Close, 55, 19, 2.9, true, 2, 50, 8));
-							AddChartIndicator(iGRID_EVO(Close, 200, 110, 5, true, 10, 500, 20));
+                            AddChartIndicator(iGRID_EVO(Close, grid1Period1, grid1omaL, grid1omaS, grid1omaA, grid1Sensitivity, grid1StepSize, grid1Period2));
+							AddChartIndicator(iGRID_EVO(Close, grid2Period1, grid2omaL, grid2omaS, grid2omaA, grid2Sensitivity, grid2StepSize, grid2Period2));
 
                         }
                 }
@@ -124,6 +140,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 						return;
 
 					
+					
 					if (iGRID_EVO2.FlipSignal[0] == 1)
 					{
 						grid2Flip = 1;
@@ -139,6 +156,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 						{
 							if(Position.MarketPosition == MarketPosition.Long)
 							{
+								if(addEntryCount == 0)
+								{
+									SetProfitTarget("GoLong", CalculationMode.Price, Position.AveragePrice + (profitTarget * (Instrument.MasterInstrument.PointValue * Instrument.MasterInstrument.TickSize)));
+								}
 								//SetStopLoss("GoLong", CalculationMode.Price, (iGRID_EVO1.StepMA[0] - (stepMASL * (Instrument.MasterInstrument.PointValue * Instrument.MasterInstrument.TickSize))), false);
 								if (iGRID_EVO1.FlipSignal[0] == -1)
 								{
@@ -146,13 +167,16 @@ namespace NinjaTrader.NinjaScript.Strategies
 								}
 								if (addEntryCount < maxEntries && iGRID_EVO1.AddSignal[0] == 1)
 								{
-									Print(string.Format("Add Signal"));
 									EnterLong(addEntryQ, "GoLong");
 									addEntryCount ++;
 								}
 							}
 							else if(Position.MarketPosition == MarketPosition.Short)
 							{
+								if(addEntryCount == 0)
+								{
+									SetProfitTarget("GoShort", CalculationMode.Price, Position.AveragePrice - (profitTarget * (Instrument.MasterInstrument.PointValue * Instrument.MasterInstrument.TickSize)));
+								}
 								//SetStopLoss("GoShort", CalculationMode.Price, (iGRID_EVO1.StepMA[0] + (stepMASL * (Instrument.MasterInstrument.PointValue * Instrument.MasterInstrument.TickSize))), false);
 								if (iGRID_EVO1.FlipSignal[0] == 1)
 								{
@@ -177,7 +201,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 									EnterLong(flipEntryQ, "GoLong");
 									longStepMA = iGRID_EVO1.StepMA[0];
 									Print(string.Format("LongStepMA is {0}", longStepMA));
-									SetProfitTarget(CalculationMode.Ticks, profitTarget);
+									//SetProfitTarget(CalculationMode.Ticks, profitTarget);
 									addEntryCount = 0;
                         		}
                         
@@ -187,7 +211,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 									EnterShort(flipEntryQ, "GoShort");
 									shortStepMA = iGRID_EVO1.StepMA[0];
 									Print(string.Format("ShortStepMA is {0}", shortStepMA));
-									SetProfitTarget(CalculationMode.Ticks, profitTarget);
+									//SetProfitTarget(CalculationMode.Ticks, profitTarget);
 									addEntryCount = 0;
 								}
 							}
@@ -239,7 +263,100 @@ namespace NinjaTrader.NinjaScript.Strategies
                         	}
                         }
 					}
+					
+					if(QgridModeSelect == CustomEnumNamespaceDoubleGrid.QgridMode.Scaling)
+					{
+						if(Position.AveragePrice != 0)
+						{
+							if(addEntryCount == maxEntries)
+							{
+								scaleSell = true;
+							}
+							
+							if(Position.MarketPosition == MarketPosition.Long)
+							{
+								if(addEntryCount == 0)
+								{
+									SetProfitTarget("GoLong", CalculationMode.Price, Position.AveragePrice + (profitTarget * (Instrument.MasterInstrument.PointValue * Instrument.MasterInstrument.TickSize)));
+								}
+								
+								if (iGRID_EVO1.FlipSignal[0] == -1)
+								{
+									ExitLong("GoLong");
+								}
+								
+								if (addEntryCount < maxEntries && iGRID_EVO1.AddSignal[0] == 1 && scaleSell == false)
+								{
+									EnterLong(addEntryQ, "GoLong");
+									addEntryCount ++;
+									contractCount ++;
+								}
+								
+								if (addEntryCount == maxEntries && iGRID_EVO1.AddSignal[0] == 1 && scaleSell == true && contractCount > 1)
+								{
+									ExitShort(1, "ExitLong", "GoLong");
+									contractCount --;
+								}
+							}
+							else if(Position.MarketPosition == MarketPosition.Short)
+							{
+								if(addEntryCount == 0)
+								{
+									SetProfitTarget("GoShort", CalculationMode.Price, Position.AveragePrice - (profitTarget * (Instrument.MasterInstrument.PointValue * Instrument.MasterInstrument.TickSize)));
+								}
+								
+								if (iGRID_EVO1.FlipSignal[0] == 1)
+								{
+									ExitShort("GoShort");
+								}
+								
+								if (addEntryCount < maxEntries && iGRID_EVO1.AddSignal[0] == -1 && scaleSell == false)
+								{
+									EnterShort(addEntryQ, "GoShort");
+									addEntryCount ++;
+									contractCount ++;
+								}
+								
+								if (addEntryCount == maxEntries && iGRID_EVO1.AddSignal[0] == -1 && scaleSell == true && contractCount > 1)
+								{
+									ExitShort(1, "ExitShort", "GoShort");
+									contractCount --;
+								}
+							}
+						}
+						
+						if(Position.MarketPosition == MarketPosition.Flat)
+						{
+							
+							if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceDoubleGrid.TimeMode.Unrestricted)
+							{
+                        	 	// Set 1
+                       	 		if (iGRID_EVO1.FlipSignal[0] == 1 && grid2Flip == 1)
+                        		{
+									EnterLong(flipEntryQ, "GoLong");
+									longStepMA = iGRID_EVO1.StepMA[0];
+									Print(string.Format("LongStepMA is {0}", longStepMA));
+									addEntryCount = 0;
+									contractCount = flipEntryQ;
+									scaleSell = false;
+                        		}
+                        
+                         		// Set 2
+                        		if (iGRID_EVO1.FlipSignal[0] == -1 && grid2Flip == 2)
+                        		{
+									EnterShort(flipEntryQ, "GoShort");
+									shortStepMA = iGRID_EVO1.StepMA[0];
+									Print(string.Format("ShortStepMA is {0}", shortStepMA));
+									addEntryCount = 0;
+									contractCount = flipEntryQ;
+									scaleSell = false;
+								}
+							}
+						}
+					}
                 }
+				
+				
 				
 				protected override void OnPositionUpdate(Position position, double averagePrice, int quantity, MarketPosition marketPosition)
 				{
@@ -373,6 +490,88 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Display(Name="Max Daily Loss (Currency)", Order=15, GroupName="Parameters")]
 		public int maxDailyLossAmount
 		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="HA Smooth Period 1", Order=1, GroupName="Qgrid 1 Parameters")]
+		public int grid1Period1
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="OMA Length", Order=2, GroupName="Qgrid 1 Parameters")]
+		public int grid1omaL
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="OMA Speed", Order=3, GroupName="Qgrid 1 Parameters")]
+		public double grid1omaS
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="Adaptive OMA", Order=4, GroupName="Qgrid 1 Parameters")]
+		public bool grid1omaA
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="Sensitivity", Order=5, GroupName="Qgrid 1 Parameters")]
+		public double grid1Sensitivity
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="Step Size", Order=6, GroupName="Qgrid 1 Parameters")]
+		public double grid1StepSize
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="HA Smooth Period 2", Order=7, GroupName="Qgrid 1 Parameters")]
+		public int grid1Period2
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="HA Smooth Period 1", Order=1, GroupName="Qgrid 2 Parameters")]
+		public int grid2Period1
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="OMA Length", Order=2, GroupName="Qgrid 2 Parameters")]
+		public int grid2omaL
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="OMA Speed", Order=3, GroupName="Qgrid 2 Parameters")]
+		public double grid2omaS
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="Adaptive OMA", Order=4, GroupName="Qgrid 2 Parameters")]
+		public bool grid2omaA
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="Sensitivity", Order=5, GroupName="Qgrid 2 Parameters")]
+		public double grid2Sensitivity
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, double.MaxValue)]
+		[Display(Name="Step Size", Order=6, GroupName="Qgrid 2 Parameters")]
+		public double grid2StepSize
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="HA Smooth Period 2", Order=7, GroupName="Qgrid 2 Parameters")]
+		public int grid2Period2
+		{ get; set; }
 
                 #endregion
         }
@@ -389,6 +588,7 @@ namespace CustomEnumNamespaceDoubleGrid
 	public enum QgridMode
 	{
 		CurrencySL,
-		Official
+		Official,
+		Scaling
 	}
 }
