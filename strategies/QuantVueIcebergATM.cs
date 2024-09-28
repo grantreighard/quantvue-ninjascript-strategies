@@ -79,8 +79,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 				LookbackPeriod = 5;
 				DQ = 10;
 				FastPeriod = 12;  
-				SlowPeriod  = 26;  
-				SignalPeriod  = 9;
+                SlowPeriod  = 26;  
+                SignalPeriod  = 9;
 				mb_Nb_bars = 15;
 				mb_period = 10;
 				mb_zero = true;
@@ -131,6 +131,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 			// Make sure this strategy does not execute against historical data
 			if(State == State.Historical)
 				return;			
+			
+			if (Bars.IsFirstBarOfSession)
+				currentPnL = 0;
 			
 			if (BarsInProgress != 0) 
 				return;
@@ -198,8 +201,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 				if ((currentPnL <= maxDailyProfitAmount || maxDailyProfit == false) || (currentPnL >= -maxDailyLossAmount || maxDailyLoss == false))
 				{
 			
-					if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[0] > mb_uThreshold && Close[0] > SMA(Close, userSMA)[0])
-					//if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[CurrentBar - macdBar] < -MACDLimit  && Close[0] > SMA(Close, userSMA)[0])
+					//if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[0] > mb_uThreshold && Close[0] > SMA(Close, userSMA)[0])
+					if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && (MACD1.Default[CurrentBar - macdBar] < -MACDLimit || MACDRestrict == false)  && Close[0] > SMA(Close, userSMA)[0])
 					{
 					//	Print("Long condition at : "+Time[0]);
 						// If there is a short ATM Strategy running close it.
@@ -222,8 +225,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 					}
 			
 					// 
-					if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[0] > mb_lThreshold && Close[0] < SMA(Close, userSMA)[0])
-					//if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[CurrentBar - macdBar] > MACDLimit && Close[0] < SMA(Close, userSMA)[0])
+					//if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[0] > mb_lThreshold && Close[0] < SMA(Close, userSMA)[0])
+					if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && (MACD1.Default[CurrentBar - macdBar] > MACDLimit || MACDRestrict == false) && Close[0] < SMA(Close, userSMA)[0])
 					{
 						Print("Short condition at " + Time[0]);
 						// If there is a long ATM Strategy running close it.
@@ -249,7 +252,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 		}
 		
-				protected override void OnPositionUpdate(Position position, double averagePrice, int quantity, MarketPosition marketPosition)
+		protected override void OnPositionUpdate(Position position, double averagePrice, int quantity, MarketPosition marketPosition)
 		{
 			if (Position.MarketPosition == MarketPosition.Flat && SystemPerformance.AllTrades.Count > 0)
 			{
