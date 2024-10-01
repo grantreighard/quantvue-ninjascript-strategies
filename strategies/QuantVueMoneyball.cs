@@ -61,6 +61,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 				TP = 30;
 				SL = 20;
 				DQ = 1;
+				mb_Nb_bars = 15;
+				mb_period = 10;
+				mb_zero = true;
+				mb_uThreshold = 0.35;
+				mb_lThreshold = -0.35;
+				mb_Sensitivity = 0.1;
 			}
 			else if (State == State.Configure)
 			{
@@ -92,7 +98,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 					SetStopLoss("GoLong",CalculationMode.Currency, SL, false);
 				}
 				
-				if (CrossBelow(Moneyball1.VBar, -mb_lThreshold, 1))
+				if (CrossBelow(Moneyball1.VBar, mb_lThreshold, 1))
 				{
 					EnterShort(DefaultQuantity, "GoShort");
 					SetProfitTarget("GoShort", CalculationMode.Currency, TP);
