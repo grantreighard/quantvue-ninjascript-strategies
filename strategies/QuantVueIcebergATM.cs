@@ -97,6 +97,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				MACDLimit = 2;
 				MACDRestrict = false;
 				entryDelayInput = 10;
+				MACDUse = true;
 				
 			}
 			else if (State == State.Configure)
@@ -202,7 +203,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				{
 			
 					//if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[0] > mb_uThreshold && Close[0] > SMA(Close, userSMA)[0])
-					if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && (MACD1.Default[CurrentBar - macdBar] < -MACDLimit || MACDRestrict == false)  && Close[0] > SMA(Close, userSMA)[0])
+					if(CrossAbove(Moneyball1.VBar, mb_uThreshold, LookbackPeriod) && CrossAbove(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossAbove(Qwave1.K1, Qwave1.VHigh, LookbackPeriod) && ((CrossAbove(MACD1.Default, MACD1.Avg, MACDLookback) && (MACD1.Default[CurrentBar - macdBar] < -MACDLimit || MACDRestrict == false)) || MACDUse == false)  && Close[0] > SMA(Close, userSMA)[0])
 					{
 					//	Print("Long condition at : "+Time[0]);
 						// If there is a short ATM Strategy running close it.
@@ -226,7 +227,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			
 					// 
 					//if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && MACD1.Default[0] > mb_lThreshold && Close[0] < SMA(Close, userSMA)[0])
-					if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && (MACD1.Default[CurrentBar - macdBar] > MACDLimit || MACDRestrict == false) && Close[0] < SMA(Close, userSMA)[0])
+					if(CrossBelow(Moneyball1.VBar, mb_lThreshold, LookbackPeriod) && CrossBelow(Qcloud1.V1, Qcloud1.V6, LookbackPeriod) && CrossBelow(Qwave1.K1, Qwave1.VLow, LookbackPeriod) && (CrossBelow(MACD1.Default, MACD1.Avg, MACDLookback) && (MACD1.Default[CurrentBar - macdBar] > MACDLimit || MACDRestrict == false) || MACDUse == false) && Close[0] < SMA(Close, userSMA)[0])
 					{
 						Print("Short condition at " + Time[0]);
 						// If there is a long ATM Strategy running close it.
@@ -351,43 +352,48 @@ namespace NinjaTrader.NinjaScript.Strategies
 		{ get; set; }
 		
 		[NinjaScriptProperty]
+		[Display(Name="Use MACD Condition?", Order=8, GroupName="Trade Parameters")]
+		public bool MACDUse
+		{ get; set; }
+		
+		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="MACD Lookback Period", Order=8, GroupName="Trade Parameters")]
+        [Display(Name="MACD Lookback Period", Order=9, GroupName="Trade Parameters")]
         public int MACDLookback 
 		{ get; set; }
 		
 		[NinjaScriptProperty]
-		[Display(Name="Restrict MACD?", Order=9, GroupName="Trade Parameters")]
+		[Display(Name="Restrict MACD?", Order=10, GroupName="Trade Parameters")]
 		public bool MACDRestrict
 		{ get; set; }
 		
 		[NinjaScriptProperty]
         [Range(1, double.MaxValue)]
-        [Display(Name="MACD Limit", Order=10, GroupName="Trade Parameters")]
+        [Display(Name="MACD Limit", Order=11, GroupName="Trade Parameters")]
         public double MACDLimit 
 		{ get; set; }
 						
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Fast Period", Order=11, GroupName="Trade Parameters")]
+        [Display(Name="Fast Period", Order=12, GroupName="Trade Parameters")]
         public int FastPeriod 
 		{ get; set; }
 
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Slow Period", Order=12, GroupName="Trade Parameters")]
+        [Display(Name="Slow Period", Order=13, GroupName="Trade Parameters")]
         public int SlowPeriod 
 		{ get; set; }
 
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="Signal Period", Order=13, GroupName="Trade Parameters")]
+        [Display(Name="Signal Period", Order=14, GroupName="Trade Parameters")]
         public int SignalPeriod 
 		{ get; set; }
 		
 		[NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name="SMA Period", Order=14, GroupName="Trade Parameters")]
+        [Display(Name="SMA Period", Order=15, GroupName="Trade Parameters")]
         public int userSMA 
 		{ get; set; }
 		
