@@ -197,7 +197,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			// Entries.
 			// **** YOU MUST HAVE AN ATM STRATEGY TEMPLATE NAMED 'IcebergATM' CREATED IN NINJATRADER (SUPERDOM FOR EXAMPLE) FOR THIS TO WORK ****
 			// Enter long if Close is greater than Open.
-			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceIceATM.TimeMode.Unrestricted && Position.MarketPosition == MarketPosition.Flat && entryDelayCounter == 0)
+			if (((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceIceATM.TimeMode.Unrestricted) && Position.MarketPosition == MarketPosition.Flat && entryDelayCounter == 0)
 			{
 				if ((currentPnL <= maxDailyProfitAmount || maxDailyProfit == false) || (currentPnL >= -maxDailyLossAmount || maxDailyLoss == false))
 				{
