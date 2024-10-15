@@ -36,6 +36,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private int										grid1Flip;
 		private int										bullbearHA2;
 
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -51,7 +52,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				MaximumBarsLookBack							= MaximumBarsLookBack.TwoHundredFiftySix;
 				OrderFillResolution							= OrderFillResolution.Standard;
 				Slippage									= 0;
-				StartBehavior								= StartBehavior.ImmediatelySubmitSynchronizeAccount;
+				StartBehavior								= StartBehavior.WaitUntilFlat;
 				TimeInForce									= TimeInForce.Gtc;
 				TraceOrders									= false;
 				RealtimeErrorHandling						= RealtimeErrorHandling.StopCancelClose;
@@ -75,6 +76,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 				grid1Sensitivity = 2;
 				grid1StepSize = 50;
 				grid1Period2 = 8;
+				maxDailyProfit = false;
+				maxDailyProfitAmount = 500;
+				maxDailyLoss = false;
+				maxDailyLossAmount = 500;
 			}
 			else if (State == State.Configure)
 			{
@@ -125,7 +130,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			
 			
-			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceGridMoney.TimeMode.Unrestricted && Position.MarketPosition == MarketPosition.Flat)
+			if ((ToTime(Time[0]) >= ToTime(startTime) && ToTime(Time[0]) <= ToTime(endTime)) || TimeModeSelect == CustomEnumNamespaceGridMoney.TimeMode.Unrestricted && Position.MarketPosition == MarketPosition.Flat && (currentPnL <= maxDailyProfitAmount || maxDailyProfit == false) || (currentPnL >= -maxDailyLossAmount || maxDailyLoss == false))
 			{
 				
 				/*
@@ -162,8 +167,49 @@ namespace NinjaTrader.NinjaScript.Strategies
 				
 			}
 			
+			if ((Position.MarketPosition == MarketPosition.Long) && ((((currentPnL + Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0])) <= -maxDailyLossAmount) && maxDailyLoss == true) || (((currentPnL + Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0])) >= maxDailyProfitAmount) && maxDailyProfit == true))) ///If unrealized goes under maxDailyLossAmount 'OR' Above maxDailyProfitAmount
+			{
+				//Print((currentPnL+Position.GetProfitLoss(Close[0], PerformanceUnit.Currency)) + " - " + -maxDailyLossAmount);
+				// print to the output window if the daily limit is hit in the middle of a trade
+				Print("daily limit hit, exiting order " + Time[0].ToString());
+				ExitLong("Daily Limit Exit", "GoLong");
+			}
+			
+			if ((Position.MarketPosition == MarketPosition.Short) && ((((currentPnL + Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0])) <= -maxDailyLossAmount) && maxDailyLoss == true) || (((currentPnL + Position.GetUnrealizedProfitLoss(PerformanceUnit.Currency, Close[0])) >= maxDailyProfitAmount) && maxDailyProfit == true))) ///If unrealized goes under maxDailyLossAmount 'OR' Above maxDailyProfitAmount    
+				
+			{
+				//Print((currentPnL+Position.GetProfitLoss(Close[0], PerformanceUnit.Currency)) + " - " + -maxDailyLossAmount);
+				// print to the output window if the daily limit is hit in the middle of a trade
+				Print("daily limit hit, exiting order " + Time[0].ToString());
+				ExitShort("Daily Limit Exit", "GoShort");
+			}
+			
 		}
 		
+		protected override void OnPositionUpdate(Position position, double averagePrice, int quantity, MarketPosition marketPosition)
+		{
+			if (Position.MarketPosition == MarketPosition.Flat && SystemPerformance.AllTrades.Count > 0)
+			{
+				// when a position is closed, add the last trade's Profit to the currentPnL
+				currentPnL += SystemPerformance.AllTrades[SystemPerformance.AllTrades.Count - 1].ProfitCurrency;
+
+				// print to output window if the daily limit is hit
+				if (currentPnL <= -maxDailyLossAmount)
+				{
+					Print("daily limit hit, no new orders" + Time[0].ToString());
+				}
+				
+				if (currentPnL >= maxDailyProfitAmount)
+				{
+					Print("daily Profit limit hit, no new orders" + Time[0].ToString()); ///Prints message to output
+				}
+				
+				if (currentPnL >= -maxDailyLossAmount && currentPnL <= maxDailyProfitAmount)
+				{
+					Print(string.Format("Daily Profit = {0}", currentPnL)); ///Prints message to output
+				}
+			}
+		}
 		
 		#region Properties
 		
@@ -194,84 +240,106 @@ namespace NinjaTrader.NinjaScript.Strategies
 		}
 		
 		[NinjaScriptProperty]
+		[Display(Name="Max Daily Profit", Order=3, GroupName="2. PnL Parameters")]
+		public bool maxDailyProfit
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="Max Daily Profit (Currency)", Order=4, GroupName="2. PnL Parameters")]
+		public int maxDailyProfitAmount
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Display(Name="Max Daily Loss", Order=5, GroupName="2. PnL Parameters")]
+		public bool maxDailyLoss
+		{ get; set; }
+		
+		[NinjaScriptProperty]
+		[Range(0, int.MaxValue)]
+		[Display(Name="Max Daily Loss (Currency)", Order=6, GroupName="2. PnL Parameters")]
+		public int maxDailyLossAmount
+		{ get; set; }
+		
+		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(Name="Number of Contracts", Order=0, GroupName="2. Trade Parameters")]
+		[Display(Name="Number of Contracts", Order=0, GroupName="3. Trade Parameters")]
 		public int DQ
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(Name="Number of bars between signals", Order=0, GroupName="3. Moneyball Parameters")]
+		[Display(Name="Number of bars between signals", Order=0, GroupName="4. Moneyball Parameters")]
 		public int mb_Nb_bars
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(Name="Period", Order=1, GroupName="3. Moneyball Parameters")]
+		[Display(Name="Period", Order=1, GroupName="4. Moneyball Parameters")]
 		public int mb_period
 		{ get; set; }
 		
 		[NinjaScriptProperty]
-		[Display(Name="All Zero", Order=2, GroupName="3. Moneyball Parameters")]
+		[Display(Name="All Zero", Order=2, GroupName="4. Moneyball Parameters")]
 		public bool mb_zero
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(.001, 1.0)]
-		[Display(Name="Upper Threshold", Order=4, GroupName="3. Moneyball Parameters")]
+		[Display(Name="Upper Threshold", Order=4, GroupName="4. Moneyball Parameters")]
 		public double mb_uThreshold
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(-1.0, -.001)]
-		[Display(Name="Lower Threshold", Order=5, GroupName="3. Moneyball Parameters")]
+		[Display(Name="Lower Threshold", Order=5, GroupName="4. Moneyball Parameters")]
 		public double mb_lThreshold
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0.001, double.MaxValue)]
-		[Display(Name="Sensitivity", Order=6, GroupName="3. Moneyball Parameters")]
+		[Display(Name="Sensitivity", Order=6, GroupName="4. Moneyball Parameters")]
 		public double mb_Sensitivity
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, int.MaxValue)]
-		[Display(Name="HA Smooth Period 1", Order=1, GroupName="4. Qgrid Parameters")]
+		[Display(Name="HA Smooth Period 1", Order=1, GroupName="5. Qgrid Parameters")]
 		public int grid1Period1
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, int.MaxValue)]
-		[Display(Name="OMA Length", Order=2, GroupName="4. Qgrid Parameters")]
+		[Display(Name="OMA Length", Order=2, GroupName="5. Qgrid Parameters")]
 		public int grid1omaL
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, double.MaxValue)]
-		[Display(Name="OMA Speed", Order=3, GroupName="4. Qgrid Parameters")]
+		[Display(Name="OMA Speed", Order=3, GroupName="5. Qgrid Parameters")]
 		public double grid1omaS
 		{ get; set; }
 		
 		[NinjaScriptProperty]
-		[Display(Name="Adaptive OMA", Order=4, GroupName="4. Qgrid Parameters")]
+		[Display(Name="Adaptive OMA", Order=4, GroupName="5. Qgrid Parameters")]
 		public bool grid1omaA
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, double.MaxValue)]
-		[Display(Name="Sensitivity", Order=5, GroupName="4. Qgrid Parameters")]
+		[Display(Name="Sensitivity", Order=5, GroupName="5. Qgrid Parameters")]
 		public double grid1Sensitivity
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, double.MaxValue)]
-		[Display(Name="Step Size", Order=6, GroupName="4. Qgrid Parameters")]
+		[Display(Name="Step Size", Order=6, GroupName="5. Qgrid Parameters")]
 		public double grid1StepSize
 		{ get; set; }
 		
 		[NinjaScriptProperty]
 		[Range(0, int.MaxValue)]
-		[Display(Name="HA Smooth Period 2", Order=7, GroupName="4. Qgrid Parameters")]
+		[Display(Name="HA Smooth Period 2", Order=7, GroupName="5. Qgrid Parameters")]
 		public int grid1Period2
 		{ get; set; }
 		
